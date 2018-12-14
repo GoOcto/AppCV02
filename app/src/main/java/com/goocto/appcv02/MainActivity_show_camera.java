@@ -121,57 +121,33 @@ public class MainActivity_show_camera extends AppCompatActivity implements CvCam
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
 
         mRgba = inputFrame.rgba();
-        //Mat mGray = inputFrame.gray();
 
+        // reorient the image so it is upright
+        Core.transpose(mRgba, mRgbaT);
+        Imgproc.resize(mRgbaT, mRgbaF, mRgbaF.size(), 0,0, 0);
+        Core.flip(mRgbaF, mRgba, 1 );
 
-        //mRgba = Scalar::all( new Scalar(255,0,0,0) );
-        Mat mOut = new Mat( 480,720, CvType.CV_8UC4 );
-        mOut.setTo( new Scalar(255,0,0,0));
-        return mOut;
+        // detect edges
+        Mat mEdges = new Mat();
+        int lowThreshold = 100;
+        int ratio = 3;
+        Imgproc.Canny(mRgba,mEdges,lowThreshold,lowThreshold*ratio);
 
-        //mRgba.setTo( new Scalar(255,0,0,0));
-        //return mRgba;
+        Mat lines = new Mat();
+        Imgproc.HoughLinesP(mEdges,lines,1,1*Math.PI/180,50,50,10);
 
-//        String msg = String.format("Frame dimensions: %d x %d",mRgba.cols(),mRgba.rows());
-//        Log.d(TAG,msg);
-//
-//        // Rotate mRgba 90 degrees
-//        Core.transpose(mRgba, mRgbaT);
-//
-//        Imgproc.resize(mRgbaT, mRgbaF, mRgbaF.size(), 0,0, 0);
-//        Size sz = new Size( mRgbaT.cols(), mRgbaT.rows()*2 );
-//        Imgproc.resize(mRgbaT, mRgbaF, sz, 1,2, 0);
-//
-//        return mRgbaF;
+        //String str = String.format("%d %d", lines.rows(), lines.cols() );
+        //Log.d(TAG,str);
 
-        //Core.flip(mRgbaF, mRgba, -1 );
-        //return mRgba;
-//
-////        // work in B&W
-////        Mat mGray = new Mat();
-////        Imgproc.cvtColor(mRgba,mGray,Imgproc.COLOR_BGRA2GRAY);
-//
-//        // detect edges
-//        Mat mEdges = new Mat();
-//        int lowThreshold = 100;
-//        int ratio = 3;
-//        Imgproc.Canny(mRgba,mEdges,lowThreshold,lowThreshold*ratio);
-//
-////        Mat lines = new Mat();
-////        Imgproc.HoughLinesP(mEdges,lines,2,5*Math.PI/180,50,50,10);
-////
-////        String str = String.format("%d %d", lines.rows(), lines.cols() );
-////        Log.d(TAG,str);
-////
-////        for ( int i=0; i<lines.rows(); i++) {
-////            double[] val = lines.get(i,0);
-////            Point p1 = new Point(val[0],val[1]);
-////            Point p2 = new Point(val[2],val[3]);
-////            Scalar c = new Scalar(255,0,0);
-////            Imgproc.line(mRgba, p1,p2,c,2);
-////        }
-//
-//        //return mRgba; // This function must return
-//        return mEdges; // This function must return
+        for ( int i=0; i<lines.rows(); i++) {
+            double[] val = lines.get(i,0);
+            Point p1 = new Point(val[0],val[1]);
+            Point p2 = new Point(val[2],val[3]);
+            Scalar c = new Scalar(255,0,0);
+            Imgproc.line(mRgba, p1,p2,c,2);
+        }
+
+        return mRgba; // This function must return
+        //return mEdges; // This function must return
     }
 }
