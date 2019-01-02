@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
 
 import org.opencv.android.JavaCameraView;
@@ -35,8 +36,8 @@ public class MainActivity_show_camera extends AppCompatActivity implements CvCam
 
     // These variables are used (at the moment) to fix camera orientation from 270degree to 0degree
     Mat mRgba;
-    Mat mRgbaF;
-    Mat mRgbaT;
+    //Mat mRgbaF;
+    //Mat mRgbaT;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -89,6 +90,9 @@ public class MainActivity_show_camera extends AppCompatActivity implements CvCam
     public void onResume()
     {
         super.onResume();
+
+        hideSystemUI();
+
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, this, mLoaderCallback);
@@ -96,6 +100,21 @@ public class MainActivity_show_camera extends AppCompatActivity implements CvCam
             Log.d(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
+    }
+
+    private void hideSystemUI() {
+        // for a good description of how these params affect the app
+        // https://developer.android.com/training/system-ui/immersive
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+            View.SYSTEM_UI_FLAG_IMMERSIVE |
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+            // Hide the nav bar and status bar
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+            View.SYSTEM_UI_FLAG_FULLSCREEN
+        );
     }
 
     public void onDestroy() {
@@ -110,12 +129,12 @@ public class MainActivity_show_camera extends AppCompatActivity implements CvCam
         Log.d(TAG,msg);
 
         mRgba = new Mat(height, width, CvType.CV_8UC4);
-        mRgbaF = new Mat(height, width, CvType.CV_8UC4);
-        mRgbaT = new Mat(width, width, CvType.CV_8UC4);
+        //mRgbaF = new Mat(height, width, CvType.CV_8UC4);
+        //mRgbaT = new Mat(width, width, CvType.CV_8UC4);
     }
 
     public void onCameraViewStopped() {
-        //mRgba.release();
+        mRgba.release();
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
@@ -123,9 +142,9 @@ public class MainActivity_show_camera extends AppCompatActivity implements CvCam
         mRgba = inputFrame.rgba();
 
         // reorient the image so it is upright
-        Core.transpose(mRgba, mRgbaT);
-        Imgproc.resize(mRgbaT, mRgbaF, mRgbaF.size(), 0,0, 0);
-        Core.flip(mRgbaF, mRgba, 1 );
+        //Core.transpose(mRgba, mRgbaT);
+        //Imgproc.resize(mRgbaT, mRgbaF, mRgbaF.size(), 0,0, 0);
+        //Core.flip(mRgbaF, mRgba, 1 );
 
         // detect edges
         Mat mEdges = new Mat();
@@ -133,6 +152,7 @@ public class MainActivity_show_camera extends AppCompatActivity implements CvCam
         int ratio = 3;
         Imgproc.Canny(mRgba,mEdges,lowThreshold,lowThreshold*ratio);
 
+/*
         Mat lines = new Mat();
         Imgproc.HoughLinesP(mEdges,lines,1,1*Math.PI/180,50,50,10);
 
@@ -146,8 +166,12 @@ public class MainActivity_show_camera extends AppCompatActivity implements CvCam
             Scalar c = new Scalar(255,0,0);
             Imgproc.line(mRgba, p1,p2,c,2);
         }
+*/
 
-        return mRgba; // This function must return
-        //return mEdges; // This function must return
+        //return mRgba; // This function must return
+        return mEdges; // This function must return
+
+
+
     }
 }
