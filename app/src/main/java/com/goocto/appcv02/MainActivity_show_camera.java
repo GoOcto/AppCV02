@@ -140,21 +140,35 @@ public class MainActivity_show_camera extends AppCompatActivity implements CvCam
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
 
         mRgba = inputFrame.rgba();
+        Size kSize = new Size(5,5);
 
-        // reorient the image so it is upright
-        //Core.transpose(mRgba, mRgbaT);
-        //Imgproc.resize(mRgbaT, mRgbaF, mRgbaF.size(), 0,0, 0);
-        //Core.flip(mRgbaF, mRgba, 1 );
+        Imgproc.GaussianBlur(mRgba,mRgba,kSize,0);
 
+//        // reorient the image so it is upright
+//        //Core.transpose(mRgba, mRgbaT);
+//        //Imgproc.resize(mRgbaT, mRgbaF, mRgbaF.size(), 0,0, 0);
+//        //Core.flip(mRgbaF, mRgba, 1 );
+//
         // detect edges
         Mat mEdges = new Mat();
         int lowThreshold = 100;
         int ratio = 3;
         Imgproc.Canny(mRgba,mEdges,lowThreshold,lowThreshold*ratio);
 
-/*
+//        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, kSize);
+//        Imgproc.dilate(mEdges,mEdges,kernel);
+//        Imgproc.erode(mEdges,mEdges,kernel);
+//
+//
+//
         Mat lines = new Mat();
-        Imgproc.HoughLinesP(mEdges,lines,1,1*Math.PI/180,50,50,10);
+        Imgproc.HoughLinesP(mEdges,lines,1,1*Math.PI/180,50,60,10);
+
+        // use a solid color
+        //mRgba.setTo( new Scalar(0,0,0,0) );
+        //mRgba = mRgba*0.2;
+
+
 
         //String str = String.format("%d %d", lines.rows(), lines.cols() );
         //Log.d(TAG,str);
@@ -166,10 +180,9 @@ public class MainActivity_show_camera extends AppCompatActivity implements CvCam
             Scalar c = new Scalar(255,0,0);
             Imgproc.line(mRgba, p1,p2,c,2);
         }
-*/
 
-        //return mRgba; // This function must return
-        return mEdges; // This function must return
+        return mRgba; // This function must return
+        //return mEdges; // This function must return
 
 
 
